@@ -110,8 +110,16 @@ El sistema ofrece las siguientes secciones principales para la gestión hospital
 * **Camas:** Crear, editar (`/editar`), eliminar (`/eliminar`), alojar paciente (`/alojar`) y desalojar paciente (`/desalojar`).
 * **Enfermeras:** Agregar/actualizar (`/editar`) y eliminar (`/eliminar`).
 * **Pacientes:** Crear/actualizar (`/editar`) y eliminar (`/eliminar`) historial clínico.
+* 
+## 8. Capturas
+<img src="/docs/DashboardN.jpg" alt="Captura del Dashboard" width="100%"/>
+<img src="/docs/AsignarEnfermero.jpg" alt="Captura del Asignaciones" width="100%"/>
+<img src="/docs/GuardarEnfermero.jpg" alt="Caputra del Asignar enfermero/a" width="100%"/>
+<img src="/docs/GestionCamas.jpg" alt="Captura del Gestion Camas Tabla" width="100%"/>
+<img src="/docs/GestionCamas2.jpg" alt="Captura del Gestion Camas Asignacion Paciente" width="100%"/>
+<img src="/docs/GestionPacientes.jpg" alt="Captura del Gestion Pacientes" width="100%"/>
 
-## 8. Autores
+## 9. Autores
 
 Trabajo realizado por:
 
