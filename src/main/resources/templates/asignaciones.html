@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script>
+        // Aplicar tema antes del renderizado (evita flash blanco)
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (e) {
+                console.error('Error aplicando tema:', e);
+            }
+        })();
+    </script>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Lito Hospital - Asignaciones Visual</title>
+
+    <!-- Preconexión y carga de fuentes Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+
+    <!-- Tailwind CSS con plugins forms y container-queries -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Configuración Tailwind personalizada -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#11a4d4',
+                        'background-light': '#f6f8f8',
+                        'background-dark': '#101d22',
+                        'card-light': '#ffffff',
+                        'card-dark': '#1f2a32'
+                    },
+                    fontFamily: { display: ['Inter'] },
+                    borderRadius: { DEFAULT: '0.25rem', lg: '0.5rem', xl: '0.75rem', full: '9999px' }
+                }
+            }
+        };
+    </script>
+
+    <!-- Estilos adicionales para animaciones y modales -->
+    <style>
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-10px) } to { opacity:1; transform:translateY(0) } }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+        .modal-show { opacity: 1 !important; pointer-events: auto !important; }
+        .modal-hide { opacity: 0; pointer-events: none; }
+        .modal-content { transform: scale(0.95); transition: transform 0.2s ease, opacity 0.2s ease; }
+        .modal-content-show { transform: scale(1); }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+<div class="flex h-screen">
+
+    <!-- Sidebar: navegación lateral con links a secciones y logout -->
+    <aside class="flex w-64 flex-col bg-background-light dark:bg-background-dark border-r border-primary/20 dark:border-primary/30">
+        <div class="flex h-20 items-center gap-3 px-6">
+            <!-- Logo SVG -->
+            <div class="text-primary size-8">
+                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+                </svg>
+            </div>
+            <h1 class="text-xl font-bold text-black dark:text-white">Hospital Lito</h1>
+        </div>
+        <!-- Justo después del div con el logo -->
+
+        <div class="px-4 pb-4">
+            <button id="darkModeToggle"
+                    class="flex w-full items-center justify-between gap-3 rounded-lg px-4 py-2.5 text-black dark:text-white hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                    <span class="text-sm font-medium">Modo oscuro</span>
+                </div>
+                <!-- Toggle switch -->
+                <div class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 dark:bg-primary transition-colors">
+                    <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1 dark:translate-x-6"></span>
+                </div>
+            </button>
+        </div>
+
+        <!-- Menú de navegación -->
+        <nav class="flex-1 space-y-2 px-4">
+            <a th:href="@{/hospitalito}" class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-black dark:text-white hover:bg-primary/20">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+            <a th:href="@{/hospitalito/asignaciones}" class="flex items-center gap-3 rounded-lg bg-primary/20 px-4 py-2.5 text-black dark:text-white">
+                <span class="material-symbols-outlined">assignment_ind</span>
+                <span class="text-sm font-medium">Asignaciones</span>
+            </a>
+            <a th:href="@{/hospitalito/enfermeras}" class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-black dark:text-white hover:bg-primary/20">
+                <span class="material-symbols-outlined">badge</span>
+                <span class="text-sm font-medium">Enfermeras</span>
+            </a>
+            <a th:href="@{/hospitalito/camas}" class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-black dark:text-white hover:bg-primary/20">
+                <span class="material-symbols-outlined">bed</span>
+                <span class="text-sm font-medium">Camas</span>
+            </a>
+            <a class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-black dark:text-white hover:bg-primary/20 dark:hover:bg-primary/30" th:href="@{/hospitalito/pacientes}">
+                <span class="material-symbols-outlined">personal_injury</span>
+                <span class="text-sm font-medium">Pacientes</span>
+            </a>
+        </nav>
+
+        <!-- Información del usuario logueado y botón de logout -->
+        <div class="p-4">
+            <div class="flex items-center gap-3">
+                <div>
+                    <p class="text-sm font-semibold text-black dark:text-white" th:text="${usuarioLogueado}"></p>
+                    <p class="text-xs text-black/60 dark:text-white/60">Administrator</p>
+                </div>
+                <form th:action="@{/logout}" method="post" id="logoutForm" style="display:none;"></form>
+                <a href="#" class="ml-auto text-black dark:text-white" onclick="document.getElementById('logoutForm').submit();">
+                    <span class="material-symbols-outlined">logout</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main: contenido principal de asignaciones -->
+    <main class="flex-1 p-8 overflow-y-auto">
+        <h2 class="text-2xl font-bold mb-6 text-black dark:text-white">Asignar Cama a Enfermera</h2>
+
+        <!-- Formulario para asignar cama a enfermera -->
+        <form id="form-asignar" th:object="${asignacion}" class="mb-8">
+            <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-sm p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <!-- Selector de enfermera con autocompletado -->
+                    <div class="relative">
+                        <label class="block mb-2 text-sm font-medium">Seleccionar Enfermera</label>
+                        <input type="text" id="buscar-enfermera" placeholder="Buscar enfermera..." required
+                               class="mb-2 w-full p-2 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-sm"
+                               autocomplete="off">
+                        <ul id="lista-enfermeras" class="absolute z-10 w-full max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-md hidden">
+                            <li th:each="e : ${enfermeras}" th:data-value="${e.idEnfermera}" class="px-2 py-1 hover:bg-primary/20 cursor-pointer text-sm"
+                                th:text="${e.nombre + ' ' + e.apellido + '('+ e.dni + ')'}"></li>
+                        </ul>
+                        <input type="hidden" th:field="*{enfermera}" id="hidden-enfermera">
+                        <div class="error-tooltip hidden text-sm text-red-600 mt-1 absolute"></div>
+                    </div>
+
+                    <!-- Selector de cama con autocompletado -->
+                    <div class="relative">
+                        <label class="block mb-2 text-sm font-medium">Seleccionar Cama</label>
+                        <input type="text" id="buscar-cama" placeholder="Buscar cama..." required
+                               class="mb-2 w-full p-2 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-sm"
+                               autocomplete="off">
+                        <ul id="lista-camas" class="absolute z-10 w-full max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-md hidden">
+                            <li th:each="c : ${camas}" th:data-value="${c.idCama}" class="px-2 py-1 hover:bg-primary/20 cursor-pointer text-sm"
+                                th:text="'Cama ' + ${c.idCama} + ' (' + ${c.categoria.codigo} + ')'"></li>
+                        </ul>
+                        <input type="hidden" th:field="*{cama}" id="hidden-cama">
+                        <div class="error-tooltip hidden text-sm text-red-600 mt-1 absolute"></div>
+                    </div>
+                </div>
+
+                <!-- Botón de enviar formulario -->
+                <div class="flex justify-end">
+                    <button type="submit"
+                            class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium">
+                        Asignar Cama
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Secciones de información dinámica -->
+
+        <!-- Info de camas asignadas a la enfermera seleccionada -->
+        <div id="info-enfermera" class="mb-8 hidden">
+            <h3 class="text-lg font-semibold text-black dark:text-white mb-4">Camas asignadas a la enfermera</h3>
+            <div id="camas-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- Info de enfermeras asignadas a la cama seleccionada -->
+        <div id="info-cama" class="mb-8 hidden">
+            <h3 class="text-lg font-semibold text-black dark:text-white mb-4">Enfermeras asignadas a la cama</h3>
+            <div id="enfermeras-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- Resumen de límites por categoría -->
+        <div id="resumen-categorias" class="mb-8">
+            <h3 class="text-lg font-semibold text-black dark:text-white mb-4">Límite de enfermeras por cama para cada categoría</h3>
+            <div id="categorias-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div id="modal-eliminar" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 opacity-0 pointer-events-none transition-opacity">
+    <div class="bg-background-light dark:bg-background-dark rounded-xl shadow-lg max-w-sm w-full p-6 modal-content">
+        <h3 class="text-lg font-semibold text-black dark:text-white mb-4">Confirmar eliminación</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-6">¿Estás seguro de que quieres eliminar esta asignación?</p>
+        <div class="flex justify-end gap-3">
+            <button id="btn-cancelar" class="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors">No</button>
+            <button id="btn-confirmar" class="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors">Sí, eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Contenedor global para flashcards -->
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+
+<!-- Script principal: lógica de asignaciones, modales, buscadores y flashcards -->
+<script th:src="@{/scripts/asignaciones.js}"></script>
+
+</body>
+</html>
+
+
+
+

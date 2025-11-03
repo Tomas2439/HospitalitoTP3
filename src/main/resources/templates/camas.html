@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script>
+        // Aplicar tema antes del renderizado (evita flash blanco)
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (e) {
+                console.error('Error aplicando tema:', e);
+            }
+        })();
+    </script>
+    <meta charset="utf-8" />
+    <!-- Preconexión a Google Fonts para optimizar carga -->
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+    <link as="style" href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;500;700;900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+    <title>Hospital Lito - Gestión de Camas</title>
+    <!-- TailwindCSS con plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <script>
+        tailwind.config = {
+          darkMode: 'class', // Activación de modo oscuro mediante clase
+          theme: {
+            extend: {
+              colors: { // Colores personalizados
+                primary: '#11a4d4',
+                'background-light': '#f6f8f8',
+                'background-dark': '#101d22',
+              },
+              fontFamily: { display: ['Inter'] }, // Fuente principal
+              borderRadius: { DEFAULT: '0.25rem', lg: '0.5rem', xl: '0.75rem', full: '9999px' }, // Radios personalizados
+            },
+          },
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display" th:data-modo-edicion="${modoEdicion != null}">
+
+<div class="flex h-screen">
+    <!-- ===========================
+         Sidebar de navegación
+         =========================== -->
+    <aside class="flex w-64 flex-col bg-background-light dark:bg-background-dark border-r border-primary/20 dark:border-primary/30">
+        <div class="flex h-20 items-center gap-3 px-6">
+            <!-- Logo SVG -->
+            <div class="text-primary w-8 h-8">
+                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+                </svg>
+            </div>
+            <h1 class="text-xl font-bold text-black dark:text-white">Hospital Lito</h1>
+        </div>
+        <!-- MODO OSCURO -->
+        <div class="px-4 pb-4">
+            <button id="darkModeToggle"
+                    class="flex w-full items-center justify-between gap-3 rounded-lg px-4 py-2.5 text-black dark:text-white hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                    <span class="text-sm font-medium">Modo oscuro</span>
+                </div>
+                <!-- Toggle switch -->
+                <div class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 dark:bg-primary transition-colors">
+                    <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1 dark:translate-x-6"></span>
+                </div>
+            </button>
+        </div>
+        <!-- Menú de navegación -->
+        <nav class="flex-1 space-y-2 px-4">
+            <a class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-black dark:text-white hover:bg-primary/20 dark:hover:bg-primary/30" th:href="@{/hospitalito}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-black dark:text-white hover:bg-primary/20 dark:hover:bg-primary/30" th:href="@{/hospitalito/asignaciones}">
+                <span class="material-symbols-outlined">assignment_ind</span>
+                <span class="text-sm font-medium">Asignaciones</span>
+            </a>
+            <a class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-black dark:text-white hover:bg-primary/20 dark:hover:bg-primary/30" th:href="@{/hospitalito/enfermeras}">
+                <span class="material-symbols-outlined">badge</span>
+                <span class="text-sm font-medium">Enfermeras</span>
+            </a>
+            <a class="flex items-center gap-3 rounded-lg bg-primary/20 dark:bg-primary/30 px-4 py-2.5 text-black dark:text-white" th:href="@{/hospitalito/camas}">
+                <span class="material-symbols-outlined">bed</span>
+                <span class="text-sm font-medium">Camas</span>
+            </a>
+            <a class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-black dark:text-white hover:bg-primary/20 dark:hover:bg-primary/30" th:href="@{/hospitalito/pacientes}">
+                <span class="material-symbols-outlined">personal_injury</span>
+                <span class="text-sm font-medium">Pacientes</span>
+            </a>
+        </nav>
+
+        <!-- Información de usuario y logout -->
+        <div class="p-4">
+            <div class="flex items-center gap-3">
+                <div>
+                    <p class="text-sm font-semibold text-black dark:text-white" th:text="${usuarioLogueado}"></p>
+                    <p class="text-xs text-black/60 dark:text-white/60">Administrator</p>
+                </div>
+                <form th:action="@{/logout}" method="post" id="logoutForm" style="display:none;"></form>
+                <a href="#" class="ml-auto text-black dark:text-white" onclick="document.getElementById('logoutForm').submit();">
+                    <span class="material-symbols-outlined">logout</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===========================
+         Main content
+         =========================== -->
+    <main class="flex-1 p-8 overflow-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Camas</h2>
+        </div>
+
+        <!-- ===========================
+             Alertas flotantes (success/error)
+             =========================== -->
+        <div id="alertContainer"
+             th:if="${success} or ${error}"
+             class="fixed top-4 right-4 z-50 transition-opacity duration-500 opacity-100">
+            <div th:if="${success}" class="flex items-center gap-3 p-4 rounded-lg shadow-md bg-green-100 text-green-800 animate-fadeIn">
+                <span class="material-symbols-outlined">check_circle</span>
+                <p th:text="${success}" class="font-medium"></p>
+            </div>
+            <div th:if="${error}" class="flex items-center gap-3 p-4 rounded-lg shadow-md bg-red-100 text-red-800 animate-fadeIn">
+                <span class="material-symbols-outlined">error</span>
+                <p th:text="${error}" class="font-medium"></p>
+            </div>
+        </div>
+
+        <style>
+            /* Animación para alertas flotantes */
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+        </style>
+
+        <!-- ===========================
+             Layout principal: Formulario + Tabla
+             =========================== -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- ===========================
+                 Formulario de agregar/editar cama
+                 =========================== -->
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-md max-h-[83vh] overflow-y-auto">
+                <h3 id="formTitle" class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Agregar Cama</h3>
+                <form id="formCama" th:object="${camaDto}" th:action="@{/hospitalito/camas/editar}" method="post" class="space-y-4"
+                      th:data-modo-edicion="${modoEdicion}" th:data-id-cama="${idEdicion}">
+                    <!-- ID oculto para edición -->
+                    <input type="hidden" th:field="*{idCama}" id="bed-id-hidden">
+
+                    <!-- Selección de categoría -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Categoría</label>
+                        <select th:field="*{idCategoria}" required id="bed-category" class="w-full pl-3 pr-10 py-2 rounded-lg border bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700/50 text-gray-900 dark:text-white">
+                            <option value="">Seleccione...</option>
+                            <option th:each="cat : ${categorias}" th:value="${cat.idCategoria}" th:text="${cat.codigo}"></option>
+                        </select>
+                    </div>
+
+                    <!-- Ubicación de la cama -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Ubicación</label>
+                        <input type="text" th:field="*{ubicacion}" id="bed-location" required class="w-full pl-3 pr-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700/50 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="Ej: Piso 2, Hab 201">
+                    </div>
+
+                    <!-- Estado oculto (disponible u ocupado) -->
+                    <input type="hidden" th:field="*{disponible}" id="bed-status">
+
+                    <!-- Botones: agregar/actualizar, cancelar, eliminar -->
+                    <div class="flex items-center justify-between pt-4">
+                        <button type="submit" id="submitBtn" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+                            <span id="submitText">Agregar</span>
+                        </button>
+                        <button type="button" id="btnCancelarEdicion" class="hidden flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                            Cancelar
+                        </button>
+                        <button type="button" id="btnEliminarCama" class="hidden flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                            Eliminar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ===========================
+                 Tabla de camas con búsqueda y filtrado
+                 =========================== -->
+            <div class="lg:col-span-2 ">
+                <!-- Filtro y búsqueda -->
+                <div class="flex gap-4 mb-4">
+                    <input id="searchInput" placeholder="Buscar por ubicación, paciente o DNI " class="flex-1 p-2 rounded border border-gray-300 dark:border-gray-700/50 dark:bg-background-dark dark:text-white dark:placeholder-gray-400"/>
+                    <select id="filterCategoria" class="p-2 rounded border border-gray-300 dark:border-gray-700/50 dark:bg-gray-700 dark:text-white">
+                        <option value="">Todas las categorías</option>
+                        <option th:each="cat : ${categorias}" th:value="${cat.idCategoria}" th:text="${cat.codigo}"></option>
+                    </select>
+                </div>
+
+                <!-- Tabla de camas -->
+                <div class="max-h-[75vh] overflow-y-auto overflow-x-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-gray-100 dark:bg-gray-700 text-gray- dark:text-gray-300">
+                        <tr>
+                            <th class="px-4 py-2">ID</th>
+                            <th class="px-4 py-2">Categoría</th>
+                            <th class="px-4 py-2">Ubicación</th>
+                            <th class="px-4 py-2">Paciente</th>
+                            <th class="px-4 py-2 text-center">Estado</th>
+                            <th class="px-4 py-2 text-center">Acción</th>
+                        </tr>
+                        </thead>
+                        <tbody id="camasTableBody">
+                        <tr th:each="cama : ${camas}" class="border-b border-gray-200 dark:border-gray-700/50 hover:bg-gray-50/50 dark:hover:bg-gray-900/20 cursor-pointer"
+                            th:data-id-cama="${cama.idCama}" th:data-id-categoria="${cama.categoria?.idCategoria}" th:data-id-hc="${cama.historialClinico?.idHC ?: ''}" th:data-disponible="${cama.disponible}">
+                            <td class="px-4 py-2 text-gray-900 dark:text-white font-medium" th:text="${cama.idCama}"></td>
+                            <td class="px-4 py-2 text-gray-900 dark:text-white font-medium" th:text="${cama.categoria?.codigo ?: 'N/A'}"></td>
+                            <td class="px-4 py-2 text-gray-600 dark:text-gray-400" th:text="${cama.ubicacion}"></td>
+                            <td class="px-4 py-2 text-gray-900 dark:text-white font-medium" th:text="${cama.historialClinico != null ? cama.historialClinico.nombre + ' ' + cama.historialClinico.apellido + ' (' + cama.historialClinico.dni + ')' : 'Ninguno'}"></td>
+                            <td class="px-4 py-2 text-center ">
+                                <span th:text="${cama.disponible ? 'Disponible' : 'Ocupada'}"
+                                      th:classappend="${cama.disponible ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}"
+                                      class="px-3 py-1 text-xs font-medium rounded-full"></span>
+                            </td>
+                            <td class="px-4 py-2 text-center">
+                                <button type="button" class="btnAlojar px-3 py-1 text-white rounded-lg"
+                                        th:text="${cama.disponible ? 'Alojar' : 'Desalojar'}"
+                                        th:classappend="${cama.disponible ? ' bg-blue-600 hover:bg-blue-700' : ' bg-red-600 hover:bg-red-700'}">
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ===========================
+     Modal de confirmación de eliminación
+     =========================== -->
+<div id="confirmModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-background-dark p-6 rounded-lg shadow-xl w-80 text-center">
+        <h3 class="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Confirmar eliminación</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-6">¿Estás seguro de que deseas eliminar esta cama?</p>
+        <div class="flex justify-center gap-4">
+            <button id="cancelDelete" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600">Cancelar</button>
+            <button id="confirmDelete" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===========================
+     Modal Alojar paciente
+     =========================== -->
+<div id="modalAlojar" class="fixed inset-0 hidden flex items-center justify-center bg-black/50 z-50">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl w-full max-w-md p-6 relative">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Seleccionar Paciente</h3>
+        <input id="searchPacienteInput" placeholder="Buscar paciente..." class="w-full p-2 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-900 mb-3 dark:text-white"/>
+        <div id="pacienteList" class="max-h-64 overflow-y-auto border border-gray-300 dark:border-gray-600 dark:text-white rounded">
+            <div th:each="hc : ${historiales}"
+                 class="p-2 hover:bg-primary/20 cursor-pointer"
+                 th:data-id-hc="${hc.idHC}"
+                 th:text="${hc.nombre + ' ' + hc.apellido + ' (' + hc.dni + ')'}">
+            </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-4">
+            <button id="btnCancelarAlojar" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Cancelar</button>
+            <button id="btnConfirmAlojar" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Alojar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===========================
+     Script principal
+     =========================== -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/scripts/camas.js}"></script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
