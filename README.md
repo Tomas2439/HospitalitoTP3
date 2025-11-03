@@ -13,6 +13,7 @@ El proyecto se basa en el stack Java con Spring Boot y utiliza las siguientes te
 | **Java** | 21 |[Java Donwloads](https://www.oracle.com/latam/java/technologies/downloads/)|
 | **Spring Boot** | 3.5.6 |[Spring Initlizr](https://start.spring.io/)|
 | **Motor de Plantillas** | Thymeleaf (para vistas HTML) |[Thymeleaf](https://www.thymeleaf.org/)|
+| **Estilado** | Tailwind (CSS) |[Tailwind CSS](https://tailwindcss.com/docs/installation/using-vite)|
 | **Base de Datos** | MySQL |[MySQL Community](https://dev.mysql.com/downloads/)|
 | **Persistencia** | Spring Data JPA |[Spring Initlizr](https://start.spring.io/)|
 | **Seguridad** | Spring Security (Autenticación y control de acceso) |[Spring Initlizr](https://start.spring.io/)|
